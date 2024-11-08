@@ -1,0 +1,3 @@
+# backend except
+/node_modules
+.env

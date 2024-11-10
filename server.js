@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+const https = require('https');
 const reviewRoute = require('./routes/review');
 
 dotenv.config();
@@ -30,6 +32,19 @@ mongoose.connect(process.env.MONGO_URI, {
   console.error('Failed to connect to MongoDB', err);
 });
 
+/*
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+*/
+
+// HTTPS 서버 설정
+const sslOptions = {
+  key: fs.readFileSync('./privkey.pem'), // 개인 키 파일
+  cert: fs.readFileSync('./cert.pem'), // SSL/TLS 인증서 파일
+};
+
+// HTTPS 서버 시작
+https.createServer(sslOptions, app).listen(PORT, () => {
+  console.log(`HTTPS Server running on ${PORT}`);
 });

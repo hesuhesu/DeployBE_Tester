@@ -19,6 +19,11 @@ app.use(cors()); // CORS 미들웨어 사용
 app.use(express.urlencoded({ extended: false })); // 내부 url 파서 사용
 app.use(express.static(path.join(__dirname + '/public'))); // 정적 파일 위치 설정
 
+// 기본 경로 라우트
+app.get('/', (req, res) => {
+  res.send('기본 가능');
+});
+
 // Routes Middleware
 app.use('/review', reviewRoute);
 

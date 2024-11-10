@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const Review = require('../models/Review');
 
+router.get('/', (req, res) => {
+    res.send('리뷰 가능');
+});
+  
 // 글 전체 목록 조회
 router.get("/read", async(req, res) => {
     try {

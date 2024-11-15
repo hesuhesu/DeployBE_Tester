@@ -7,11 +7,14 @@ const DiarySchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true
   },
+  realContent:{
+    type: String,
+  },
+  imgData:[String],
   createdAt: {
     type: String,
   }
 });
   
-module.exports = mongoose.model('Review', DiarySchema);
+module.exports = mongoose.model('Diary', DiarySchema);

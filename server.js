@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT;
 const MONGO_PORT = process.env.MONGO_PORT;
-const AUTH_USER = process.env.AUTH;
+const AUTH_USER = process.env.AUTH_USER;
 const AUTH_PASSWORD = process.env.AUTH_PASSWORD;
 const READ_WRITE_USER = process.env.READ_WRITE_USER;
 const READ_WRITE_PASSWORD = process.env.READ_WRITE_PASSWORD;
@@ -40,7 +40,7 @@ function default_connect() {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   }).then(() => {
-    console.log('Connected to MongoDB');
+    console.log('Only Read Connected to MongoDB');
   }).catch((err) => {
     console.error('Failed to connect to MongoDB', err);
   });
@@ -55,7 +55,7 @@ app.post('/login', (req, res) => {
     const uri = `mongodb://${READ_WRITE_USER}:${READ_WRITE_PASSWORD}@127.0.0.1:${MONGO_PORT}`;
     if (mongoose.connection.readyState === 1) { mongoose.disconnect(); }
     mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-      .then(() => { console.log('Connected to MongoDB'); })
+      .then(() => { console.log('Read Write Connected to MongoDB'); })
       .catch(err => { console.error('MongoDB connection error:', err); });
     return res.status(200).send('Login successful');
   } else {

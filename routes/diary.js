@@ -20,7 +20,6 @@ router.get("/read", async (req, res) => {
 router.get("/all_read", async(req, res) => {
     try {
         const diary = await Diary.find().sort({ createdAt: -1 });
-        console.log("데이터 보냄");
         res.json({ list: diary });
     } catch (error) {
         console.log(error);

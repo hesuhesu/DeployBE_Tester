@@ -11,6 +11,9 @@ const DiarySchema = new mongoose.Schema({
   realContent:{
     type: String,
   },
+  category:{
+    type: String,
+  },
   imgData:[String],
   createdAt: {
     type: String,

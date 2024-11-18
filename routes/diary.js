@@ -44,6 +44,9 @@ router.post("/write", async(req, res) => {
       obj = {
         title: req.body.title,
         content: req.body.content,
+        realContent: req.body.realContent,
+        imgData: req.body.imgData,
+        category: req.body.category,
         createdAt: createdAt
       };
       const diary = new Diary(obj);
@@ -55,16 +58,29 @@ router.post("/write", async(req, res) => {
     }
 })
 
+// 카테고리 별 검색
+router.get("/search", async (req, res) => {
+    try {
+        const diary = await Diary.find({ category : req.query.category }).sort({ createdAt: -1 });
+        res.json({ list: diary });
+    } catch (err) {
+        res.json({ message: false });
+    }
+});
+
 // 글 업데이트
 router.put("/update", async (req,res) => {
     try {
         
-        await Board.updateOne(
+        await Diary.updateOne(
             {_id: req.body._id},
             {
                 $set: {
                     title: req.body.title,
                     content: req.body.content,
+                    realContent: req.body.realContent,
+                    imgData: req.body.imgData,
+                    category: req.body.category
                 }
             }
         );
@@ -77,7 +93,7 @@ router.put("/update", async (req,res) => {
 // 글 삭제 
 router.delete("/delete", async(req,res) => {
     try {
-       await Board.deleteOne({_id: req.query._id })
+       await Diary.deleteOne({_id: req.query._id })
        res.json({ message: true });
     } catch (error) {
        res.json({ message: false });

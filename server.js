@@ -7,7 +7,6 @@ const multer = require('multer');
 const {v4: uuidv4} = require('uuid'); // 파일 겹침 방지
 const fs = require('fs');
 const https = require('https');
-const reviewRoute = require('./routes/review');
 const diaryRoute = require('./routes/diary');
 
 dotenv.config();
@@ -34,7 +33,6 @@ app.get('/', (req, res) => {
 });
 
 // Routes Middleware
-app.use('/review', reviewRoute);
 app.use('/diary', diaryRoute);
 
 // MongoDB Connection

@@ -35,18 +35,6 @@ app.get('/', (req, res) => {
 // Routes Middleware
 app.use('/diary', diaryRoute);
 
-// MongoDB Connection
-function default_connect() {
-  mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }).then(() => {
-    console.log('Only Read Connected to MongoDB');
-  }).catch((err) => {
-    console.error('Failed to connect to MongoDB', err);
-  });
-}
-
 // multer 설정
 const upload = multer({
   storage: multer.diskStorage({
@@ -79,38 +67,6 @@ app.post('/img', upload.single('img'), (req, res) => {
   res.json({ url: IMG_URL, realName: req.file.filename });
 });
 
-// 로그인 엔드포인트
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-
-  // 사용자 인증 로직
-  if (username === AUTH_USER && password === AUTH_PASSWORD) {
-    const uri = `mongodb://${READ_WRITE_USER}:${READ_WRITE_PASSWORD}@127.0.0.1:${MONGO_PORT}`;
-    if (mongoose.connection.readyState === 1) { mongoose.disconnect(); }
-    mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-      .then(() => { console.log('Read Write Connected to MongoDB'); })
-      .catch(err => { console.error('MongoDB connection error:', err); });
-    return res.status(200).send('Login successful');
-  } else {
-    if (mongoose.connection.readyState === 1) {
-      return res.status(200).send('not super user');
-    }
-    return res.status(401).send('Invalid credentials');
-  }
-});
-
-// 로그아웃 엔드포인트
-app.post('/logout', (req, res) => {
-  if (mongoose.connection.readyState === 1) {
-    mongoose.disconnect();
-    console.log('Logged out successfully');
-    default_connect();
-    return res.status(200).send('Logout successful');
-  } else {
-    return res.status(400).send('No user is logged in');
-  }
-});
-
 // 파일 삭제를 위한 /all_delete 라우터 추가
 app.delete('/delete_files', (req, res) => {
   const imgFile = req.query.imgData; // 클라이언트에서 파일명 배열을 받아옴
@@ -140,7 +96,14 @@ app.delete('/delete_files', (req, res) => {
   });
 });
 
-default_connect();
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('Only Read Connected to MongoDB');
+}).catch((err) => {
+  console.error('Failed to connect to MongoDB', err);
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

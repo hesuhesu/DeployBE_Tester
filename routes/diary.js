@@ -27,6 +27,37 @@ router.get("/all_read", async(req, res) => {
     }
 });
 
+router.get("/one_read", async(req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1; // 현재 페이지 (기본값: 1)
+        const limit = parseInt(req.query.limit) || 10; // 한 페이지당 아이템 수 (기본값: 10)
+        const skip = (page - 1) * limit; // 건너뛸 문서 수
+
+        // MongoDB 쿼리로 데이터 가져오기
+        const diaries = await Diary.find()
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 }); // 최신 순으로 정렬
+
+        // 전체 문서 수 (페이징 처리용)
+        const totalDiaries = await Diary.countDocuments();
+
+        res.status(200).json({
+            success: true,
+            list: diaries,
+            currentPage: page,
+            totalPages: Math.ceil(totalDiaries / limit),
+            totalItems: totalDiaries,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: '서버 에러가 발생했습니다.',
+            error: error.message,
+        });
+    }
+});
+
 // 글 쓰기
 router.post("/write", async(req, res) => {
     try {

@@ -8,6 +8,7 @@ const {v4: uuidv4} = require('uuid'); // 파일 겹침 방지
 const fs = require('fs');
 const https = require('https');
 const diaryRoute = require('./routes/diary');
+const authRoute = require('./routes/auth');
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.get('/', (req, res) => {
 
 // Routes Middleware
 app.use('/diary', diaryRoute);
+app.use('/auth', authRoute);
 
 // multer 설정
 const upload = multer({

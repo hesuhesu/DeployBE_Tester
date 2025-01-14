@@ -68,7 +68,7 @@ router.get("/one_page_read", async(req, res) => {
 });
 
 // 글 쓰기
-router.post("/write", authenticateToken, async(req, res) => {
+router.post("/write", async(req, res) => {
     try {
       let obj;
       const now = new Date();
@@ -109,7 +109,7 @@ router.get("/search", async (req, res) => {
 });
 
 // 글 업데이트
-router.put("/update", authenticateToken, async (req,res) => {
+router.put("/update", async (req,res) => {
     try {
         
         await Diary.updateOne(
@@ -131,7 +131,7 @@ router.put("/update", authenticateToken, async (req,res) => {
 });
 
 // 글 삭제 
-router.delete("/delete", authenticateToken, async(req,res) => {
+router.delete("/delete", async(req,res) => {
     try {
        await Diary.deleteOne({_id: req.query._id })
        res.json({ message: true });

@@ -98,6 +98,44 @@ router.post("/write", async(req, res) => {
     }
 })
 
+// 댓글 추가
+router.post("/add_comment", async (req, res) => {
+    try {
+        const { diaryId, username, content } = req.body;
+
+        const diary = await Diary.findById(diaryId);
+        if (!diary) {
+            return res.status(404).json({ message: "일기를 찾을 수 없습니다." });
+        }
+
+        // 댓글 추가
+        diary.comments.push({ username, content });
+        await diary.save();
+
+        res.json({ message: "댓글이 추가되었습니다.", comments: diary.comments });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "댓글 추가에 실패했습니다.", error: error.message });
+    }
+});
+
+// 댓글 조회
+router.get("/comments", async (req, res) => {
+    try {
+        const { diaryId } = req.query;
+
+        const diary = await Diary.findById(diaryId);
+        if (!diary) {
+            return res.status(404).json({ message: "일기를 찾을 수 없습니다." });
+        }
+
+        res.json({ comments: diary.comments });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "댓글 조회에 실패했습니다.", error: error.message });
+    }
+});
+
 // 카테고리 별 검색
 router.get("/search", async (req, res) => {
     try {

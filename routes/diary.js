@@ -99,10 +99,10 @@ router.post("/write", async(req, res) => {
 })
 
 // 댓글 추가
-router.post("/add_comment", async (req, res) => {
+router.post("/add_comment", authenticateToken, async (req, res) => {
     try {
-        const { diaryId, username, content } = req.body;
-
+        const { diaryId, content } = req.body;
+        const { username } = req.user;
         const diary = await Diary.findById(diaryId);
         if (!diary) {
             return res.status(404).json({ message: "일기를 찾을 수 없습니다." });
@@ -112,10 +112,42 @@ router.post("/add_comment", async (req, res) => {
         diary.comments.push({ username, content });
         await diary.save();
 
-        res.json({ message: "댓글이 추가되었습니다.", comments: diary.comments });
+        res.json({ message: "댓글이 추가되었습니다.", username, comments: diary.comments });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "댓글 추가에 실패했습니다.", error: error.message });
+    }
+});
+
+// 댓글 삭제
+router.delete("/delete_comment", authenticateToken, async (req, res) => {
+    try {
+        const { diaryId, index } = req.body; // 댓글 내용
+        const { username } = req.user;
+        const diary = await Diary.findById(diaryId);
+        if (!diary) {
+            return res.status(404).json({ message: "일기를 찾을 수 없습니다." });
+        }
+
+        // 요청한 인덱스가 유효한지 확인
+        if (index < 0 || index >= diary.comments.length) {
+            return res.status(400).json({ message: "유효하지 않은 댓글 인덱스입니다." });
+        }
+
+        // 댓글 작성자가 요청한 사용자와 일치하는지 확인
+        const comment = diary.comments[index];
+        if (comment.username !== username) {
+            return res.status(403).json({ message: "댓글을 삭제할 권한이 없습니다." });
+        }
+
+        // 댓글 삭제
+        diary.comments.splice(index, 1);
+        await diary.save();
+
+        res.json({ message: "댓글이 삭제되었습니다.", comments: diary.comments });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "댓글 삭제에 실패했습니다.", error: error.message });
     }
 });
 

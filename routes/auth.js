@@ -7,15 +7,25 @@ dotenv.config();
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
-// 회원가입
+// 회원가입 라우터
 router.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+
+    // 유효성 검사
+    if (!username || !password) {
+        return res.status(400).json({ message: '모든 필드를 입력해야 합니다.' });
+    }
+
     try {
-        const { username, password } = req.body;
-        const user = new User({ username, password });
-        await user.save();
+        // 사용자 생성
+        const newUser = new User({ username, password });
+        await newUser.save();
         res.status(201).json({ message: '회원가입 성공' });
     } catch (error) {
-        res.status(400).json({ error: '회원가입 실패', message: error.message });
+        if (error.code === 11000) {
+            return res.status(400).json({ message: '이미 존재하는 사용자입니다.' });
+        }
+        res.status(500).json({ message: '서버 오류' });
     }
 });
 
@@ -29,7 +39,7 @@ router.post('/login', async (req, res) => {
         }
 
         // HS256 알고리즘을 사용하여 토큰 생성
-        const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '1h', algorithm: 'HS256' });
+        const token = jwt.sign({ id: user._id, username }, SECRET_KEY, { expiresIn: '1h', algorithm: 'HS256' });
         res.json({ token });
     } catch (error) {
         res.status(500).json({ message: '로그인 실패', error: error.message });
@@ -41,7 +51,6 @@ const authenticateToken = (req, res, next) => {
     const token = req.headers['authorization'];
     if (!token) return res.status(401).json({ message: '토큰이 없습니다.' });
 
-    // 토큰 검증 시에도 알고리즘을 명시적으로 설정할 수 있습니다.
     jwt.verify(token, SECRET_KEY, { algorithms: ['HS256'] }, (err, user) => {
         if (err) return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
         req.user = user;

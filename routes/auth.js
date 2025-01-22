@@ -13,7 +13,7 @@ router.post('/register', async (req, res) => {
 
     // 유효성 검사
     if (!username || !password) {
-        return res.status(400).json({ message: '모든 필드를 입력해야 합니다.' });
+        return res.status(401).json({ message: '모든 필드를 입력해야 합니다.' });
     }
 
     try {

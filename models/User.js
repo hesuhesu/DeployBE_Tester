@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    refreshToken: {
+        type: String,
+        default: null
+    }
 });
 
 userSchema.pre('save', async function (next) {

@@ -3,9 +3,11 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
 const dotenv = require('dotenv');
+// const cookieParser = require('cookie-parser');
 dotenv.config();
 
-const SECRET_KEY = process.env.SECRET_KEY;
+const ACCESS_SECRET_KEY = process.env.ACCESS_SECRET_KEY;
+const REFRESH_SECRET_KEY = process.env.REFRESH_SECRET_KEY;
 
 // 회원가입 라우터
 router.post('/register', async (req, res) => {
@@ -38,12 +40,33 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: '아이디 또는 비밀번호가 잘못되었습니다.' });
         }
 
-        // HS256 알고리즘을 사용하여 토큰 생성
-        const token = jwt.sign({ id: user._id, username }, SECRET_KEY, { expiresIn: '1h', algorithm: 'HS256' });
-        res.json({ token });
+        // Access Token 생성
+        const accessToken = jwt.sign({ id: user._id, username }, ACCESS_SECRET_KEY, { expiresIn: '5m', algorithm: 'HS256' });
+
+        // Refresh Token 생성 및 저장
+        const refreshToken = jwt.sign({ id: user._id, username }, REFRESH_SECRET_KEY, { expiresIn: '7d', algorithm: 'HS256' });
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        res.json({ accessToken, refreshToken });
     } catch (error) {
         res.status(500).json({ message: '로그인 실패', error: error.message });
     }
+});
+
+// Refresh Token을 사용하여 Access Token 재발급
+router.post('/token', async (req, res) => {
+    const token = req.headers['authorization'];
+    if (!token) return res.sendStatus(401);
+
+    const user = await User.findOne({ refreshToken: token });
+    if (!user) return res.sendStatus(403);
+
+    jwt.verify(token, REFRESH_SECRET_KEY, (err, userData) => {
+        if (err) return res.sendStatus(403);
+        const accessToken = jwt.sign({ id: userData.id, username: userData.username }, ACCESS_SECRET_KEY, { expiresIn: '5m' });
+        res.json({ accessToken });
+    });
 });
 
 // 인증 미들웨어
@@ -51,7 +74,7 @@ const authenticateToken = (req, res, next) => {
     const token = req.headers['authorization'];
     if (!token) return res.status(401).json({ message: '토큰이 없습니다.' });
 
-    jwt.verify(token, SECRET_KEY, { algorithms: ['HS256'] }, (err, user) => {
+    jwt.verify(token, ACCESS_SECRET_KEY, { algorithms: ['HS256'] }, (err, user) => {
         if (err) return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
         req.user = user;
         next();

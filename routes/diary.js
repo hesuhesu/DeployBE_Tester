@@ -137,7 +137,7 @@ router.delete("/delete_comment", authenticateToken, async (req, res) => {
         // 댓글 작성자가 요청한 사용자와 일치하는지 확인
         const comment = diary.comments[index];
         if (comment.username !== username) {
-            return res.status(402).json({ message: "댓글을 삭제할 권한이 없습니다." });
+            return res.status(401).json({ message: "댓글을 삭제할 권한이 없습니다." });
         }
 
         // 댓글 삭제

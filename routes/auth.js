@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
 const dotenv = require('dotenv');
-// const cookieParser = require('cookie-parser');
 dotenv.config();
 
 const ACCESS_SECRET_KEY = process.env.ACCESS_SECRET_KEY;
@@ -41,7 +40,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Access Token 생성
-        const accessToken = jwt.sign({ id: user._id, username }, ACCESS_SECRET_KEY, { expiresIn: '5m', algorithm: 'HS256' });
+        const accessToken = jwt.sign({ id: user._id, username }, ACCESS_SECRET_KEY, { expiresIn: '1m', algorithm: 'HS256' });
 
         // Refresh Token 생성 및 저장
         const refreshToken = jwt.sign({ id: user._id, username }, REFRESH_SECRET_KEY, { expiresIn: '7d', algorithm: 'HS256' });
@@ -64,7 +63,7 @@ router.post('/token', async (req, res) => {
 
     jwt.verify(token, REFRESH_SECRET_KEY, (err, userData) => {
         if (err) return res.sendStatus(403);
-        const accessToken = jwt.sign({ id: userData.id, username: userData.username }, ACCESS_SECRET_KEY, { expiresIn: '5m' });
+        const accessToken = jwt.sign({ id: userData.id, username: userData.username }, ACCESS_SECRET_KEY, { expiresIn: '1m' });
         res.json({ accessToken });
     });
 });

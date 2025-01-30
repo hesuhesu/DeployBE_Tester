@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -20,7 +21,25 @@ const HOST = process.env.HOST;
 app.use(express.json({
   limit : "1mb"
 }));
-app.use(cors()); // CORS 미들웨어 사용
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'http://127.0.0.1:5000',
+        'http://localhost:5000',
+      ];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 
 app.use(express.urlencoded({
   limit:"1mb",

@@ -40,14 +40,21 @@ router.post('/login', async (req, res) => {
         }
 
         // Access Token 생성
-        const accessToken = jwt.sign({ id: user._id, username }, ACCESS_SECRET_KEY, { expiresIn: '1m', algorithm: 'HS256' });
+        const accessToken = jwt.sign({ id: user._id, username }, ACCESS_SECRET_KEY, { expiresIn: '15m', algorithm: 'HS256' });
 
-        // Refresh Token 생성 및 저장
+        // Refresh Token 생성
         const refreshToken = jwt.sign({ id: user._id, username }, REFRESH_SECRET_KEY, { expiresIn: '7d', algorithm: 'HS256' });
         user.refreshToken = refreshToken;
         await user.save();
 
-        res.json({ accessToken, refreshToken });
+        // Refresh Token을 쿠키에 저장
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // 프로덕션 환경에서는 true로 설정
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+        });
+
+        res.json({ accessToken });
     } catch (error) {
         res.status(500).json({ message: '로그인 실패', error: error.message });
     }
@@ -55,15 +62,21 @@ router.post('/login', async (req, res) => {
 
 // Refresh Token을 사용하여 Access Token 재발급
 router.post('/token', async (req, res) => {
-    const token = req.headers['authorization'];
-    if (!token) return res.sendStatus(401);
+    const token = req.cookies.refreshToken; // 쿠키에서 refresh token 가져오기
+    if (!token) return res.status(401).json({ message: 'Refresh Token이 없습니다.' });
 
     const user = await User.findOne({ refreshToken: token });
-    if (!user) return res.sendStatus(403);
+    if (!user) return res.status(403).json({ message: '유효하지 않은 Refresh Token입니다.' });
 
     jwt.verify(token, REFRESH_SECRET_KEY, (err, userData) => {
-        if (err) return res.sendStatus(403);
-        const accessToken = jwt.sign({ id: userData.id, username: userData.username }, ACCESS_SECRET_KEY, { expiresIn: '1m' });
+        if (err) {
+            // Refresh Token이 만료된 경우
+            if (err.name === 'TokenExpiredError') {
+                return res.status(403).json({ message: 'Refresh Token이 만료되었습니다. 다시 로그인 해주세요.' });
+            }
+            return res.status(403).json({ message: '유효하지 않은 Refresh Token입니다.' });
+        }
+        const accessToken = jwt.sign({ id: userData.id, username: userData.username }, ACCESS_SECRET_KEY, { expiresIn: '15m' });
         res.json({ accessToken });
     });
 });

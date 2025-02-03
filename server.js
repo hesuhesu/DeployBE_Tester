@@ -21,24 +21,10 @@ const HOST = process.env.HOST;
 app.use(express.json({
   limit : "1mb"
 }));
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      const allowedOrigins = [
-        'http://localhost:3000',
-        'http://127.0.0.1:5000',
-        'http://localhost:5000',
-      ];
-
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: 'http://localhost:3000', // 프론트엔드 도메인
+  credentials: true, // 쿠키 전달을 허용
+}));
 app.use(cookieParser());
 
 app.use(express.urlencoded({

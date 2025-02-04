@@ -50,6 +50,7 @@ router.post('/login', async (req, res) => {
         // Refresh Token을 쿠키에 저장
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
+            sameSite:true,
             secure: process.env.NODE_ENV === 'production', // 프로덕션 환경에서는 true로 설정
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
         });

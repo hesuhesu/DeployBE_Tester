@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -20,8 +21,11 @@ const HOST = process.env.HOST;
 app.use(express.json({
   limit : "1mb"
 }));
-app.use(cors()); // CORS 미들웨어 사용
-
+app.use(cors({
+  origin: 'http://localhost:3000', // 프론트엔드 도메인
+  credentials: true, // 쿠키 전달을 허용
+}));
+app.use(cookieParser());
 app.use(express.urlencoded({
   limit:"1mb",
   extended: false

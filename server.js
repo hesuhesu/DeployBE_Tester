@@ -26,7 +26,6 @@ app.use(cors({
   credentials: true, // 쿠키 전달을 허용
 }));
 app.use(cookieParser());
-
 app.use(express.urlencoded({
   limit:"1mb",
   extended: false
